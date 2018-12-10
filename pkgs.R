@@ -1,0 +1,8 @@
+options(expressions = 5e5)
+library(h2o)
+library(tidyverse)
+library(readxl)
+library(rSymPy)
+library(maps)
+library(reticulate)
+data(state.fips)
