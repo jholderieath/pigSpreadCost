@@ -992,7 +992,9 @@ Prices <- Prices %>%
 Prices <- Prices %>%
     mutate(P_2020 = P_2012 * chgs_2020)%>%
     mutate(P_2028 = P_2020 * chgs_2028)%>%
-    mutate(P_2036 = P_2028 * chgs_2036)
+    mutate(P_2036 = P_2028 * chgs_2036)%>%
+  add_column(rownames = c("corn", "soy", "wheat", "rice", "peanuts"))%>%
+  column_to_rownames(var="rownames")
 ```
 
 ```{r}
@@ -1005,10 +1007,62 @@ vet <- ve %>%
     select(-reg)%>%
     reshape2::dcast(GEOID ~ Var, value.var = 'val')
 
-SIM <- 
-    left_join(SIM,vet, by = 'GEOID')
-        
-SIM$p_corn_2020 <- SIM$p_corn_2012 * (1 + (SIM$ss__corn * (SIM$e_corn_corn * Prices[1,2])))
+SIM <- left_join(SIM,vet, by = 'GEOID')
+
+
+SIM$price_corn_2012 <- Prices[['corn','P_2012']]
+SIM$price_soy_2012 <- Prices[['soy','P_2012']]
+SIM$price_wheat_2012 <- Prices[['wheat','P_2012']]
+SIM$price_rice_2012 <- Prices[['rice','P_2012']]
+SIM$price_peanuts_2012 <- Prices[['peanuts','P_2012']]
+SIM$price_corn_2020 <- Prices[['corn','P_2020']]
+SIM$price_soy_2020 <- Prices[['soy','P_2020']]
+SIM$price_wheat_2020 <- Prices[['wheat','P_2020']]
+SIM$price_rice_2020 <- Prices[['rice','P_2020']]
+SIM$price_peanuts_2020 <- Prices[['peanuts','P_2020']]
+SIM$price_corn_2028 <- Prices[['corn','P_2028']]
+SIM$price_soy_2028 <- Prices[['soy','P_2028']]
+SIM$price_wheat_2028 <- Prices[['wheat','P_2028']]
+SIM$price_rice_2028 <- Prices[['rice','P_2028']]
+
+
+#---------------
+SIM$EP_corn_2020 <- 1- Prices[['corn','chgs_2020']]
+SIM$EP_soy_2020 <- 1- Prices[['soy','chgs_2020']]
+SIM$EP_wheat_2020 <- 1- Prices[['wheat','chgs_2020']]
+SIM$EP_rice_2020 <- 1- Prices[['rice','chgs_2020']]
+SIM$EP_peanuts_2020 <- 1- Prices[['peanuts','chgs_2020']]
+SIM$EP_corn_2028 <- 1- Prices[['corn','chgs_2028']]
+SIM$EP_soy_2028 <- 1- Prices[['soy','chgs_2028']]
+SIM$EP_wheat_2028 <- 1- Prices[['wheat','chgs_2028']]
+SIM$EP_rice_2028 <- 1- Prices[['rice','chgs_2028']]
+SIM$EP_peanuts_2028 <- 1- Prices[['peanuts','chgs_2028']]
+SIM$EP_corn_2036 <- 1- Prices[['corn','chgs_2036']]
+SIM$EP_soy_2036 <- 1- Prices[['soy','chgs_2036']]
+SIM$EP_wheat_2036 <- 1- Prices[['wheat','chgs_2036']]
+SIM$EP_rice_2036 <- 1- Prices[['rice','chgs_2036']]
+
+
+#-----------------------
+
+
+SIM$price_peanuts_2028 <- Prices[['peanuts','P_2028']]
+SIM$EP_peanuts_2036 <- 1- Prices[['peanuts','chgs_2036']]
+    
+#-----------------------
+SIM$price_corn_2036 <- Prices[['corn','P_2036']]
+SIM$price_soy_2036 <- Prices[['soy','P_2036']]
+SIM$price_wheat_2036 <- Prices[['wheat','P_2036']]
+SIM$price_rice_2036 <- Prices[['rice','P_2036']]
+SIM$price_peanuts_2036 <- Prices[['peanuts','P_2036']]
+
+#------------------------------------------------------------
+
+SIM$q_corn_2020 <- SIM$p_corn_2012 * (1 + (SIM$ss__corn * (SIM$e_corn_corn * SIM$EP_corn_2020)))
+SIM$q_soy_2020 <- SIM$p_soy_2012 * (1 + (SIM$ss__soy * (SIM$e_soy_soy * SIM$EP_soy_2020)))
+SIM$q_wheat_2020 <- SIM$p_soy_2012 * (1 + (SIM$ss__soy * (SIM$e_soy_soy * SIM$EP_soy_2020)))
+SIM$q_rice_2020 <- SIM$p_soy_2012 * (1 + (SIM$ss__soy * (SIM$e_soy_soy * SIM$EP_soy_2020)))
+SIM$q_peanuts_2020 <- SIM$p_soy_2012 * (1 + (SIM$ss__soy * (SIM$e_soy_soy * SIM$EP_soy_2020)))
 
 <- SIM %>%
     add_column( = )
