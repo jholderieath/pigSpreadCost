@@ -1,8 +1,3 @@
----
-title: "Potential Welfare Impacts From the Continued Spread of Wild Pigs"
-output: html_notebook
----
-```{r echo=TRUE}
 #options(expressions = 5e5)
 library(h2o)
 library(tidyverse)
@@ -16,27 +11,9 @@ library(triangle)
 h2o.no_progress()
 source('edm_fx.R')
 #data(state.fips)
-```
+# load elasticities
+source('elast.R')
 
-# Abstract
-Wild Pigs are spreading across the United States and bringing damage with them. Damage estimates from a survey of producers reported 2014 crop losses of $190 million in 11 US states (Anderson et al. 2016), and associated short-run welfare losses were calculated at $142 million (Holderieath et al. 2018). With approximately 80% of corn, 78% of soybeans, 62% of wheat, 6% of rice, and 1% of peanuts produced in counties that do not have wild pigs, there is a substantial amount of production at risk in the event of continued spread. Preliminary results from an equilibrium displacement model of those crops suggest that if wild pigs inflict a relatively small amount of damage in all counties they are not currently present in, consumer surplus will suffer by $1.154 billion and producer surplus netting a gain of $423 million. McClure et al. (2015) and Snow et al. (2017) have demonstrated that wild pigs can survive in much of the US; however, not all US counties are equally likely to be invaded. This work will integrate the probability of wild pig invasion to find the likely welfare effects of wild pigs continuing to spread.
-
-# Introduction
-
-Invasive wild pigs, also known as feral swine and wild boars were introduced to the Southeastern United States in the 16th century by Spanish explorers (Keiter, Mayer, and Beasley 2016). Wild pig presence can be costly as they are known to carry diseases dangerous to humans and livestock, depredate and compete for resources with native wildlife and damage property. Total damages have been estimated at $800 million per year (Pimentel, Zuniga, and Morrison 2005). Direct production losses to corn, soybeans, wheat, rice, and peanuts in ten of the affected states were estimated at $190 million per year through a producer survey (Anderson et al. 2016). There is more to be considered than simple production losses. Production losses will affect prices, which will affect consumers and producers who do not experience damage. Net short-run welfare losses due to wild pig damage to corn, soybeans, wheat, rice, and peanuts were calculated at $142 million (Holderieath et al. 2018). However, three of those crops are primarily grown outside of the counties that have wild pigs. If wild pigs continue to spread, that absence may be short-lived.
-In recent years, wild pigs are spreading at an increasing rate across the continental United States. Over the thirty years between 1982 and 2012, the northward rate of expansion was 8.9 kilometers per year, and the yearly average rate of northward expansion from 2009 to 2012 was 12.6 kilometers per year  (Snow, Jarzyna, and VerCauteren 2017). Building on the methods of Snow, Jarzyna, and VerCauteren (2017) and Holderieath et al. (2018) we pair an ecological model of the probability of spreading wild pigs with an economic model of crop damage to estimate the potential for welfare losses if wild pigs continue their northward spread.
-
-# Methods
-Our basic approach is to estimate a similar model to Snow, Jarzyna, and VerCauteren (2017) with many of the same regressors and with the same end of predicting the probability of invasion in a period. However, we take a different approach to estimation, discussed in the next subsection. In year timesteps over the next thirty years, counties are randomly presented for a new infestation of wild pigs. Newly present wild pigs will then affect the probability of neighboring counties when they are presented. In this way, the probability of spread is a function of the presence of wild pigs in neighboring and nearby counties in addition to regressors such as weather and land use. Once counties have been presented for invasion, a random level of damage from a triangle distribution described in a later subsection is imposed. In modern times wild pigs are rarely removed from a county, so the simulation does not provide for that. Once wild pigs are present, they remain present for the duration of the simulation. Each county’s production is sent to a national market, and price changes are calculated with an equilibrium displacement model. Welfare measures are calculated as compensating variation and production losses. 
-
-## Probability of Invasion
-Snow, Jarzyna, and VerCauteren (2017) used an openBUGS (Bayesian inference Using Gibbs Sampling) model (OpenBUGS 2018) implemented in R (R Core Team 2018) for their prediction of wild pig territory expansion. Spatio-temporal presence data is available (Lutman 2013; Snow, Jarzyna, and VerCauteren 2017), however, the intervals are not even and the data does not specify absence, only presence. Any attempt to use this data as a panel data set for estimation of spread will encounter both spatial and temporal non-stationarity. The non-stationarity should be expected because spatial nearness to wild pigs is one of the best predictors of presence of wild pigs. The time steps are uneven and eradication is rarely observed leading to suspicion over the time dimension. These problems could be corrected to find a consistent estimator (e.g., a within or first differences model). However, maybe another approach is warranted. 
-
-The problem at hand is essentially an ecological classification problem. Are wild pigs known to be present? This type of problem has been addressed with a machine learning method known as Random Forest (RF) (Cutler et al. 2007; Walsh et al. 2017). One particularly attractive characteristic of this approach is the lack of reliance on distributional assumptions (Cutler et al. 2007; Walsh et al. 2017). At its most simple, the software builds numerous weighted decision trees and uses those trees to predict an outcome. The intuition of decision trees is also attractive as we can see the importance of variables on the predictions and understand that distance to the nearest known population of wild pigs is an important predictor of wild pig presence, for example (Cook 2017).
-
-Data from the online appendix of Snow, Jarzyna, and VerCauteren (2017) was reshaped to standard panel format with variables in columns and observations across time in rows. Variables for precipitation, stream distance, road miles, and land-use were used in the analysis, however, variables about temperature were dropped due to an apparent loss of prediction accuracy. Temperature is highly correlated with latitude and the RF appeared to put too much weight on those variables, reducing accuracy in predicting presence in later time periods as wild pigs move north. A more spatially direct modeling technique would not need data on distance to nearest known wild pigs because it would be implicit in the model. Adopting the RF approach meant a need to know how far wild pigs are from a given county (that is not itself). Distance between each county within 500 miles (Roth 2014) was combined with wild pig presence data (Lutman 2013) to create a minimum distance to wild pigs from each county variable to pair with the reshaped Snow, Jarzyna, and VerCauteren (2017) data.
-
-```{r snow_and_pig_data, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 # Snow et al data import
 SNOW <- read_csv("SNOW.csv") 
 # Recode expansion variable
@@ -106,12 +83,6 @@ SNOW <- left_join(by = c('GEOID' = 'FIPS') , SNOW, PigsIn1988)
 SNOW <- left_join(by = c('GEOID' = 'FIPS') , SNOW, PigsIn2004)
 SNOW <- left_join(by = c('GEOID' = 'FIPS') , SNOW, PigsIn2012)
 
-```
-
-
-A software product, H2O (Cook 2017), was used to implement the RF in R (R Core Team 2018). Training was carried out on the periods 1982-1988, 1988-2004, and 2009-2012. Validation was carried out using a Cross-Validation method with fifty folds. The model was able to predict presence or unknown with approximately nine percent errors. The model was tested with the period 2004-2009 with slightly higher errors of approximately ten percent.
-
-```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 train_tbl <- SNOW %>% filter(TIME == 1 | TIME == 2| TIME == 3)
 #valid_tbl <- SNOW %>% filter(TIME == 2)
 test_tbl  <- SNOW %>% filter(TIME == 4)
@@ -149,13 +120,7 @@ m <- h2o.randomForest(x,y,train_h2o, nfolds = 50, model_id = "RF_defaults",keep_
 m
 mt <- h2o.performance(m, test_h2o)
 mt
-```
 
-
-## Spatio-temporal Simulation of Spread
-With estimated an estimated probability of invasion function, counties are evaluated for the probability of invasion in random order, without replacement. The RF model developed in the previous section is used to evaluate iteratively updated data on wild pig presence. Random presentation, rather than south to north is an attempt to simulate human introduction. The county’s probability of invasion is evaluated, then a random draw from u(0…1) is compared to the probability of invasion. If the probability is greater than the draw, the county is invaded and its status is updated for all subsequent counties evaluated in that time-step. Time-steps were set at an attempt to average the wildly varying spans of time between the observation points of 1982, 1988, 2004, and 2012. Predicted observations were set for 2020, 2028, and 2036 for a long-term outlook on the problem.
-
-```{r}
 # incorporate predictions to snow data--------------
 SIM <- as.data.frame(h2o.predict(m,test_h2o))
 SIM <- bind_cols(filter(SNOW, TIME == 4),SIM)
@@ -317,80 +282,80 @@ AbstractballparkS4 <- read_csv("AbstractballparkS4.txt")
 
 #2020
 SIM$draw_corn_2020 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Corn), 
-                                     b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
+                                a=min(AbstractballparkS4$Corn), 
+                                b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
 
 SIM$EB_corn_2020 <- -1 * SIM$draw_corn_2020 * SIM$New_Id_2020
 
 SIM$draw_soy_2020 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Soybeans), 
-                                     b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
+                               a=min(AbstractballparkS4$Soybeans), 
+                               b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
 SIM$EB_soy_2020 <- -1 * SIM$draw_corn_2020 * SIM$New_Id_2020
 
 SIM$draw_wheat_2020 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Wheat), 
-                                     b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
+                                 a=min(AbstractballparkS4$Wheat), 
+                                 b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
 SIM$EB_wheat_2020 <- -1 * SIM$draw_wheat_2020 * SIM$New_Id_2020
 
 SIM$draw_rice_2020 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Rice), 
-                                     b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
+                                a=min(AbstractballparkS4$Rice), 
+                                b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
 SIM$EB_rice_2020 <- -1 * SIM$draw_rice_2020 * SIM$New_Id_2020
 
 SIM$draw_peanuts_2020 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Peanuts), 
-                                     b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
+                                   a=min(AbstractballparkS4$Peanuts), 
+                                   b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
 SIM$EB_peanuts_2020 <- -1 * SIM$draw_peanuts_2020 * SIM$New_Id_2020
 #2028
 SIM$draw_corn_2028 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Corn), 
-                                     b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
+                                a=min(AbstractballparkS4$Corn), 
+                                b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
 SIM$EB_corn_2028 <- -1 * SIM$draw_corn_2028 * SIM$New_Id_2028
 
 SIM$draw_soy_2028 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Soybeans), 
-                                     b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
+                               a=min(AbstractballparkS4$Soybeans), 
+                               b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
 SIM$EB_soy_2028 <- -1 * SIM$draw_corn_2028 * SIM$New_Id_2028
 
 SIM$draw_wheat_2028 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Wheat), 
-                                     b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
+                                 a=min(AbstractballparkS4$Wheat), 
+                                 b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
 SIM$EB_wheat_2028 <- -1 * SIM$draw_wheat_2028 * SIM$New_Id_2028
 
 SIM$draw_rice_2028 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Rice), 
-                                     b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
+                                a=min(AbstractballparkS4$Rice), 
+                                b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
 SIM$EB_rice_2028 <- -1 * SIM$draw_rice_2028 * SIM$New_Id_2028
 
 SIM$draw_peanuts_2028 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Peanuts), 
-                                     b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
+                                   a=min(AbstractballparkS4$Peanuts), 
+                                   b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
 SIM$EB_peanuts_2028 <- -1 * SIM$draw_peanuts_2028 * SIM$New_Id_2028
 
 #2036
 SIM$draw_corn_2036 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Corn), 
-                                     b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
+                                a=min(AbstractballparkS4$Corn), 
+                                b=max(AbstractballparkS4$Corn),                                   c=(min(AbstractballparkS4$Corn)+max(AbstractballparkS4$Corn))/2)
 SIM$EB_corn_2036 <- -1 * SIM$draw_corn_2036 * SIM$New_Id_2036
 
 SIM$draw_soy_2036 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Soybeans), 
-                                     b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
+                               a=min(AbstractballparkS4$Soybeans), 
+                               b=max(AbstractballparkS4$Soybeans),                      c=(min(AbstractballparkS4$Soybeans)+max(AbstractballparkS4$Soybeans))/2)
 SIM$EB_soy_2036 <- -1 * SIM$draw_corn_2036 * SIM$New_Id_2036
 
 SIM$draw_wheat_2036 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Wheat), 
-                                     b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
+                                 a=min(AbstractballparkS4$Wheat), 
+                                 b=max(AbstractballparkS4$Wheat),                      c=(min(AbstractballparkS4$Wheat)+max(AbstractballparkS4$Wheat))/2)
 SIM$EB_wheat_2036 <- -1 * SIM$draw_wheat_2036 * SIM$New_Id_2036
 
 SIM$draw_rice_2036 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Rice), 
-                                     b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
+                                a=min(AbstractballparkS4$Rice), 
+                                b=max(AbstractballparkS4$Rice),                      c=(min(AbstractballparkS4$Rice)+max(AbstractballparkS4$Rice))/2)
 SIM$EB_rice_2036 <- -1 * SIM$draw_rice_2036 * SIM$New_Id_2036
 
 SIM$draw_peanuts_2036 <- rtriangle(nrow(SIM),
-                                     a=min(AbstractballparkS4$Peanuts), 
-                                     b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
+                                   a=min(AbstractballparkS4$Peanuts), 
+                                   b=max(AbstractballparkS4$Peanuts),                      c=(min(AbstractballparkS4$Peanuts)+max(AbstractballparkS4$Peanuts))/2)
 SIM$EB_peanuts_2036 <- -1 * SIM$draw_peanuts_2036 * SIM$New_Id_2036
 
 SIM <- select(SIM, -starts_with('draw_'))
@@ -399,11 +364,6 @@ rm(by_cty,countyPigs,PigsIn1982,PigsIn1988,PigsIn2004,PigsIn2012,REPEAT,sf12010c
 h2o.shutdown(prompt = FALSE)
 gc()
 
-
-
-```
-
-```{r}
 data(continental_us_states)
 
 map_2020 <- SIM %>%
@@ -441,52 +401,6 @@ county_choropleth(map_2036,
                   legend = "Presence",
                   state_zoom = continental_us_states)
 
-
-
-
-```
-
-
-## Price Changes
-Price changes due to the invasions are found with an equilibrium displacement model (EDM). EDM’s begin with the premise that the market in question is in equilibrium, the market is shocked, and then moves to another equilibrium (Nogueira et al. 2015; Holderieath et al. 2018; Brester, Marsh, and Atwood 2004). For each of the five crops,
-
-$$
-EP_k* \eta_{kk}^D+\sum_{j=1}^J (EP_k* \eta_{kj}^D)+s_k^{Exports} * EP_k* \eta_{kk}^{Exports}=s_k^{Imports}* EP_k*\eta_kk^{Imports}+ \sum_{fips=1}^{FIPS} (s_k^{fips} *(EP_k* \eta_{kk}^{fips}+ \sum_{j=1}^J(EP_k* \eta_{kj}^{fips})+EB_k^{fips})))
-$$
-
-are solved simultaneously with the change operator modifying the price of the commodity, $EP_k$, is used to denote the relative change of the price of commodity ($k$), elasticities ($\eta$) of demand ($D$), $exports$, $imports$, and production locations ($fips$) for own price ($kk$) and cross price elasticities ($kj$), production and consumption weights ($s$) with the same notation, and exogenous relative production shocks ($EB$). 
-
-Elasticities are the same as used by Holderieath et al. (2018) with additional supply elasticities from FAPRI‐MU (2004). Verification of the model was conducted with unit own price elasticities and no cross price elasticities. Price changes with this set of verification elasticities are positive as expected from a restriction of supply. 
-
-Exogenous production shocks are randomly drawn from the damage results from Anderson et al. (2016). There is substantial variation between states reported by Anderson et al. (2016) and it is not immediately apparent what states would be most alike with respect to wild pig damage drivers. There are no consumption shocks in the model, so they have been omitted for clarity. The only market level analyzed is at the farm production level, because that is where the damage occurs.
-
-As a matter of programming pragmatism, it would be easier to solve this set of equations if it were of the form $Ax=b$. Five price changes, $x$, could be solved by in this case simplifying to a $5x5$ matrix of weighted elasticities, $A$, and a $5x1$ matrix of weighted exogenous shocks. This can be accomplished with some rearranging. 
-
-First, the demand side for corn be expanded as an example. Notice that the domestic consumption does not have a weight. This is due to the derivation of the EDM not including a weight for domestic consumption. In practice a weight of one is assigned domestic consumtption. Second, notice that the export demand equation does not include terms for cross price elasticities. The specification of the EDM did not include cross price elasticities of export demand. In practice elasticities of zero are assigned to these cross price elasticities. Third, notice that there are no exogenous shocks included on the demand side. This was assumed in specification. In practice an exogenous shock of zero was assigned.
-
-$$
-EP_{corn}* \eta_{corn,corn}^D+\\
-EP_{soy}* \eta_{corn,soy}^D+ \\
-EP_{wheat}* \eta_{corn,wheat}^D+ \\
-EP_{rice}* \eta_{corn,rice}^D+ \\
-EP_{peanuts}* \eta_{corn,peanuts}^D+\\
-s_{corn}^{Exports} * EP_{corn}* \eta_{kk}^{Exports}
-$$
-Then the supply side. Again, import supply is specified without a shock or cross price elasticites, however, in practice they are assigned zero values. For the sake of compactness, each county's supply is indexed by the $fips$ identifier. The county weight is distributed. 
-$$
-s_k^{Imports}* EP_{corn}*\eta_{corn,corn}^{Imports}+ \\
-\sum_{fips=1}^{FIPS} (s_k^{fips} *EP_{corn}* eta_{kk}^{fips}+ \\
-s_{corn}^{fips} *EP_{soy}* \eta_{corn,soy}^{fips})+ \\
-s_{corn}^{fips} *EP_{wheat}* \eta_{corn,wheat}^{fips})+ \\
-s_{corn}^{fips} *EP_{rice}* \eta_{corn,rice}^{fips})+ \\
-s_{corn}^{fips} *EP_{peanuts}* \eta_{corn,peanuts}^{fips})+ \\
-s_{corn}^{fips} *EB_{corn}^{fips}
-)
-$$
-Once assembled as five very long equations without parentesis, the terms on the supply side multiplied by the $EP_k$ terms can be moved to the demand side by multiplying them by $-1$. The exogenous shocks, of zeros, for the demand side can be moved across to take up space. The numerical coefficients being multiplied by the $EP_k$ terms can be collected together by addition. Price changes are found by solving $Ax=b$ for $x$.
-
-
-```{r}
 # build dfs for price change calculations--------------
 crops <- c("corn","soy","wheat",'rice','peanut')
 markets <- c("domestic","export")
@@ -495,39 +409,28 @@ suppliers <- unique(c("imports",unlist(s)))
 variables <- gen_var(crops,markets,suppliers)
 EB <- gen_shock(crops, place=suppliers, side = "B")
 EC <- gen_shock(crops, place=markets, side = "C")
-```
 
-```{r}
-# load elasticities
-source('elast.R')
-```
-
-```{r}
 # build elasticity of demand df------------
 A1 <- as.tibble(e_domestic) %>%
   mutate(rowname = c("domestic_corn", "domestic_soy", "domestic_wheat", "domestic_rice", "domestic_peanut"))
 wt_dom <- tibble(rowname = c("domestic_corn", "domestic_soy", "domestic_wheat", "domestic_rice", "domestic_peanut"),
-             val = diag(w_domestic))%>%
+                 val = diag(w_domestic))%>%
   rename(weight = val)
 dom <- left_join(wt_dom,A1, by = "rowname") 
 dom <- dom[['weight']] * dom[-(1:2)]#multiply elasticities by weight 
 dom
-```
 
-```{r}
 # build elasticity of imports df--------------
 A3 <- as.tibble(e_imports) %>%
   mutate(rowname = c("imports_corn", "imports_soy", "imports_wheat", "imports_rice", "imports_peanut"))
 wt_imp <- tibble(rowname = c("imports_corn", "imports_soy", "imports_wheat", "imports_rice", "imports_peanut"),
-              val = diag(ss_imports))%>%
+                 val = diag(ss_imports))%>%
   rename(weight = val)
 imp <- left_join(wt_imp,A3, by = "rowname")
 imp$weight <- -1 * imp$weight #move import supply to left side of equal sign
 imp <- imp[['weight']] * imp[-(1:2)]#multiply elasticities by weight 
 imp
-```
 
-```{r}
 # build elasticity of exports df --------
 A2 <- as.tibble(e_export) %>%
   mutate(rowname = c("export_corn", "export_soy", "export_wheat", "export_rice", "export_peanut"))
@@ -538,9 +441,7 @@ wt_exp <- tibble(rowname = c("export_corn", "export_soy", "export_wheat", "expor
 exp <-  left_join(wt_exp,A2, by = "rowname")
 exp <- exp[['weight']] * exp[-(1:2)]#multiply elasticities by weight 
 exp
-```
 
-```{r}
 # build elasticity of domestic suppliers df ------------
 ve <- variables %>%
   unlist()%>%
@@ -570,9 +471,9 @@ ve$val <-  purrr::map_dbl(temp, eval_parse)
 
 
 EBL <- tibble(EB) %>%
-    rename(name = EB)%>%
-    filter(str_detect(name, "\\bEB_[:digit:]{5}."))%>%
-    mutate(rowname = substr(name,4,18))
+  rename(name = EB)%>%
+  filter(str_detect(name, "\\bEB_[:digit:]{5}."))%>%
+  mutate(rowname = substr(name,4,18))
 
 # rownames------------
 rn <- EBL$rowname
@@ -599,11 +500,11 @@ A4_corn <- as.tibble(ve %>%
                as_vector()) %>%
   rename(corn = value)%>%
   mutate(rowname = str_subset(rn,"\\b[:digit:]{5}.corn$"))
-  
+
 A4_soy <- as.tibble(ve %>%
-                       filter(str_detect(name, "corn_soy$"))%>% 
-                       select(val) %>%
-                       as_vector()) %>%
+                      filter(str_detect(name, "corn_soy$"))%>% 
+                      select(val) %>%
+                      as_vector()) %>%
   add_column(soy = ve %>%
                filter(str_detect(name, "soy_soy$"))%>% 
                select(val) %>%
@@ -624,9 +525,9 @@ A4_soy <- as.tibble(ve %>%
   mutate(rowname = str_subset(rn,"\\b[:digit:]{5}.soy$"))
 
 A4_wheat <- as.tibble(ve %>%
-                      filter(str_detect(name, "corn_wheat$"))%>% 
-                      select(val) %>%
-                      as_vector()) %>%
+                        filter(str_detect(name, "corn_wheat$"))%>% 
+                        select(val) %>%
+                        as_vector()) %>%
   add_column(soy = ve %>%
                filter(str_detect(name, "soy_wheat$"))%>% 
                select(val) %>%
@@ -647,9 +548,9 @@ A4_wheat <- as.tibble(ve %>%
   mutate(rowname = str_subset(rn,"\\b[:digit:]{5}.wheat$"))
 
 A4_rice <- as.tibble(ve %>%
-                      filter(str_detect(name, "corn_rice$"))%>% 
-                      select(val) %>%
-                      as_vector()) %>%
+                       filter(str_detect(name, "corn_rice$"))%>% 
+                       select(val) %>%
+                       as_vector()) %>%
   add_column(soy = ve %>%
                filter(str_detect(name, "soy_rice$"))%>% 
                select(val) %>%
@@ -670,9 +571,9 @@ A4_rice <- as.tibble(ve %>%
   mutate(rowname = str_subset(rn,"\\b[:digit:]{5}.rice$"))
 
 A4_peanut <- as.tibble(ve %>%
-                      filter(str_detect(name, "corn_peanut$"))%>% 
-                      select(val) %>%
-                      as_vector()) %>%
+                         filter(str_detect(name, "corn_peanut$"))%>% 
+                         select(val) %>%
+                         as_vector()) %>%
   add_column(soy = ve %>%
                filter(str_detect(name, "soy_peanut$"))%>% 
                select(val) %>%
@@ -733,7 +634,7 @@ result <- map2_dbl(x,y,ssLookup,data=tmp_Pres)
 
 vw <- vw %>%
   add_column(val = result)%>% 
-    rename(rowname = name)%>%
+  rename(rowname = name)%>%
   mutate(rowname = substr(rowname,4,19))
 
 rm(Total_Corn_Supply,Total_Soy_Supply,Total_Wheat_Supply,
@@ -773,9 +674,6 @@ sup_peanut$weight <- -1 * sup_peanut$weight #move domestic supply to left side o
 sup_peanut <- sup_peanut[['weight']] * sup_peanut[(1:5)]#multiply elasticities by weight 
 sup_peanut <- summarise_all(sup_peanut,sum)
 
-```
-
-```{r}
 #combine into A mat------------------
 A_s_corn <- dom[1,] + exp[1,] + imp[1,] + sup_corn 
 A_s_soy <- dom[2,] + exp[2,] + imp[2,] + sup_soy
@@ -784,19 +682,13 @@ A_s_rice <- dom[4,] + exp[4,] + imp[4,] + sup_rice
 A_s_peanut <- dom[5,] + exp[5,] + imp[5,] + sup_peanut
 
 A <- bind_rows(A_s_corn,
-            A_s_soy,
-            A_s_wheat,
-            A_s_rice,
-            A_s_peanut
-            )%>%
+               A_s_soy,
+               A_s_wheat,
+               A_s_rice,
+               A_s_peanut
+)%>%
   as.matrix()
 A
-```
-
-
-
-
-```{r}
 
 # build exogenous shock matrix b
 # all shocks are domestic supply shocks
@@ -856,10 +748,10 @@ b_sup_peanut$wtedshock <- b_sup_peanut$val * b_sup_peanut$weight
 #combine into b mat------------------
 shock_2020 <- 
   matrix(c(corn = sum(b_sup_corn[,5]),
-            soy = sum(b_sup_soy[,5]),
-            wheat = sum(b_sup_wheat[,5]),
-            rice = sum(b_sup_rice[,5]),
-            peanuts = sum(b_sup_peanut[,5])),nrow=5)
+           soy = sum(b_sup_soy[,5]),
+           wheat = sum(b_sup_wheat[,5]),
+           rice = sum(b_sup_rice[,5]),
+           peanuts = sum(b_sup_peanut[,5])),nrow=5)
 #2028========================================================
 EBL_2028 <- tibble(EB) %>%
   rename(name = EB)%>%
@@ -905,10 +797,10 @@ b_sup_peanut$wtedshock <- b_sup_peanut$val * b_sup_peanut$weight
 #combine into b mat------------------
 shock_2028 <- 
   matrix(c(corn = sum(b_sup_corn[,5]),
-            soy = sum(b_sup_soy[,5]),
-            wheat = sum(b_sup_wheat[,5]),
-            rice = sum(b_sup_rice[,5]),
-            peanuts = sum(b_sup_peanut[,5])),nrow=5)
+           soy = sum(b_sup_soy[,5]),
+           wheat = sum(b_sup_wheat[,5]),
+           rice = sum(b_sup_rice[,5]),
+           peanuts = sum(b_sup_peanut[,5])),nrow=5)
 #2036=======================================================
 EBL_2036 <- tibble(EB) %>%
   rename(name = EB)%>%
@@ -954,58 +846,51 @@ b_sup_peanut$wtedshock <- b_sup_peanut$val * b_sup_peanut$weight
 #combine into b mat------------------
 shock_2036 <- 
   matrix(c(corn = sum(b_sup_corn[,5]),
-            soy = sum(b_sup_soy[,5]),
-            wheat = sum(b_sup_wheat[,5]),
-            rice = sum(b_sup_rice[,5]),
-            peanuts = sum(b_sup_peanut[,5])),nrow=5)
-```
+           soy = sum(b_sup_soy[,5]),
+           wheat = sum(b_sup_wheat[,5]),
+           rice = sum(b_sup_rice[,5]),
+           peanuts = sum(b_sup_peanut[,5])),nrow=5)
 
-```{r}
 #solve for price changes ------------------------------
 chgs_2020 <- solve(A,shock_2020)
 chgs_2028 <- solve(A,shock_2028)
 chgs_2036 <- solve(A,shock_2036)
 
-```
-
-```{r}
 #new prices 
 #2012 Prices from NASS
 Prices <- tribble(
-    ~P_2012,
-    6.89,
-    14.4,
-    7.77,
-    15.1,
-    0.301
-        )
+  ~P_2012,
+  6.89,
+  14.4,
+  7.77,
+  15.1,
+  0.301
+)
 Prices <- Prices %>%
-    add_column(chgs_2020 = as.vector(chgs_2020))%>%
-    add_column(chgs_2028 = as.vector(chgs_2028))%>%
-    add_column(chgs_2036 = as.vector(chgs_2036))
+  add_column(chgs_2020 = as.vector(chgs_2020))%>%
+  add_column(chgs_2028 = as.vector(chgs_2028))%>%
+  add_column(chgs_2036 = as.vector(chgs_2036))
 
 Prices <- Prices %>%
-    mutate(chgs_2020 = chgs_2020 + 1)%>%
-    mutate(chgs_2028 = chgs_2028 + 1)%>%
-    mutate(chgs_2036 = chgs_2036 + 1)
+  mutate(chgs_2020 = chgs_2020 + 1)%>%
+  mutate(chgs_2028 = chgs_2028 + 1)%>%
+  mutate(chgs_2036 = chgs_2036 + 1)
 
 Prices <- Prices %>%
-    mutate(P_2020 = P_2012 * chgs_2020)%>%
-    mutate(P_2028 = P_2020 * chgs_2028)%>%
-    mutate(P_2036 = P_2028 * chgs_2036)%>%
+  mutate(P_2020 = P_2012 * chgs_2020)%>%
+  mutate(P_2028 = P_2020 * chgs_2028)%>%
+  mutate(P_2036 = P_2028 * chgs_2036)%>%
   add_column(rownames = c("corn", "soy", "wheat", "rice", "peanuts"))%>%
   column_to_rownames(var="rownames")
-```
 
-```{r}
 #quantities
 vet <- ve %>%
-    mutate(GEOID = str_extract(name,"[:digit:]{5}"))%>%
-    mutate(Var = paste0('e_',
-                        str_extract(name, '(corn|soy|wheat|rice|peanut){1}'),"_",
-                        str_extract(name, '(corn|soy|wheat|rice|peanut)\\b')))%>%
-    select(-reg)%>%
-    reshape2::dcast(GEOID ~ Var, value.var = 'val')
+  mutate(GEOID = str_extract(name,"[:digit:]{5}"))%>%
+  mutate(Var = paste0('e_',
+                      str_extract(name, '(corn|soy|wheat|rice|peanut){1}'),"_",
+                      str_extract(name, '(corn|soy|wheat|rice|peanut)\\b')))%>%
+  select(-reg)%>%
+  reshape2::dcast(GEOID ~ Var, value.var = 'val')
 
 SIM <- left_join(SIM,vet, by = 'GEOID')
 
@@ -1078,32 +963,17 @@ SIM$q_wheat_2036 <- (SIM$q_wheat_2028 * (1 + (SIM$ss__wheat * (SIM$e_wheat_corn 
 SIM$q_rice_2036 <- (SIM$q_rice_2028 * (1 + (SIM$ss__rice * (SIM$e_rice_corn * SIM$EP_corn_2036 + SIM$e_rice_soy * SIM$EP_soy_2036 + SIM$e_rice_wheat * SIM$EP_wheat_2036 + SIM$e_rice_rice * SIM$EP_rice_2036 + SIM$e_rice_peanut * SIM$EP_peanuts_2036))))%>%replace_na(0)
 
 SIM$q_peanuts_2036 <- (SIM$q_peanuts_2028 * (1 + (SIM$ss__peanut * (SIM$e_peanut_corn * SIM$EP_corn_2036 + SIM$e_peanut_soy * SIM$EP_soy_2036 + SIM$e_peanut_wheat * SIM$EP_wheat_2036 + SIM$e_peanut_rice * SIM$EP_rice_2036 + SIM$e_peanut_peanut * SIM$EP_peanuts_2036))))%>%replace_na(0)
-```
-
-```{r}
 
 #using USDA Crop Yearbook reports, supply and disapperance tables for 2012
 domestic_total_use_2012 <- c(
-10352811000, 1784000000, 1176000000 , 119040000 , 3910000000   
+  10352811000, 1784000000, 1176000000 , 119040000 , 3910000000   
 )
 domestic_total_use_2020 <- domestic_total_use_2012 * (1+ ((dom[,'corn'] * (Prices$chgs_2020[1] - 1))+(dom[,'soy'] * (Prices$chgs_2020[2] - 1))+(dom[,'wheat'] * (Prices$chgs_2020[3] - 1))+(dom[,'rice'] * (Prices$chgs_2020[4] - 1))+(dom[,'peanut'] * (Prices$chgs_2020[5] - 1))))
- 
+
 domestic_total_use_2028 <- domestic_total_use_2020 * (1+ ((dom[,'corn'] * (Prices$chgs_2028[1] - 1))+(dom[,'soy'] * (Prices$chgs_2028[2] - 1))+(dom[,'wheat'] * (Prices$chgs_2028[3] - 1))+(dom[,'rice'] * (Prices$chgs_2028[4] - 1))+(dom[,'peanut'] * (Prices$chgs_2028[5] - 1))))
 
 domestic_total_use_2036 <- domestic_total_use_2028 * (1+ ((dom[,'corn'] * (Prices$chgs_2036[1] - 1))+(dom[,'soy'] * (Prices$chgs_2036[2] - 1))+(dom[,'wheat'] * (Prices$chgs_2036[3] - 1))+(dom[,'rice'] * (Prices$chgs_2036[4] - 1))+(dom[,'peanut'] * (Prices$chgs_2036[5] - 1))))
-```
 
-
-
-
-##Welfare Effects
-Welfare changes are measured geometrically, discounted and summed. The sensitivity of these types of shifts to functional form is minimal, and the error imposed by using linear approximations should be acceptable so long as the changes are relatively small (Brester, Marsh, and Atwood 2004; Alston, Norton, and Pardey 1995). Welfare changes from the initial time-step to the last are discounted and summed to find total damage over the simulation period. Only long-run elasticities are used, and the adjustment is assumed to be complete within each time-step. Welfare changes are calculated as changes in producer and consumer surplus. Consumer surplus change is calculated 
-
-$$
-\int_{0}^{Q_1} f(Q) dQ - P_1 \times Q_1^D - \int_{0}^{Q_0} f(Q) dQ- P_0 \times Q_0^D
-$$
-where $Q_1$ and $P_1$ represent the quantity and price clearing the market after the exogenous shock and $Q_0$ and $P_0$ represent the quantity and price prior to the shock.
-```{r}
 # consumer surplus
 m_2012 <- (1/(diag(as.matrix(dom))))*Prices[['P_2012']]/domestic_total_use_2012
 b_2012 <- Prices[['P_2012']]-m_2012 * domestic_total_use_2012
@@ -1112,7 +982,7 @@ CS_2012 <- (((b_2012-Prices[['P_2012']]) * domestic_total_use_2012) / 2)
 m_2020 <- (1/(diag(as.matrix(dom))))*Prices[['P_2020']]/domestic_total_use_2020
 b_2020 <- Prices[['P_2020']]-m_2020 * domestic_total_use_2020
 CS_2020 <- (((b_2020-Prices[['P_2020']]) * domestic_total_use_2020) / 2)
-  
+
 m_2028 <- (1/(diag(as.matrix(dom))))*Prices[['P_2028']]/domestic_total_use_2028
 b_2028 <- Prices[['P_2028']]-m_2028 * domestic_total_use_2028
 CS_2028 <- (((b_2028-Prices[['P_2028']]) * domestic_total_use_2028) / 2) 
@@ -1124,14 +994,8 @@ CS_2036 <- (((b_2036-Prices[['P_2036']]) * domestic_total_use_2036) / 2)
 Delta_CS_2020 <-CS_2020 - CS_2012
 Delta_CS_2028 <-CS_2028 - CS_2020
 Delta_CS_2036 <-CS_2036 - CS_2028
-```
 
-Consumer surplus changes were modest. The shift between 2012 and 2020 results in a loss of
-. 
-Producer surplus is measured geometrically.  
-
-Producer surplus
-```{r} 
+# Producer surplus
 # find slope
 SIM$m_corn_2012 <- ((1/  SIM$e_corn_corn)*Prices[[1,'P_2012']]/SIM$p_corn_2012)%>%replace_na(0)
 SIM$m_corn_2020 <- ((1/  SIM$e_corn_corn)*Prices[[1,'P_2020']]/SIM$q_corn_2020)%>%replace_na(0)
@@ -1158,9 +1022,6 @@ SIM$m_peanuts_2020 <- ((1/  SIM$e_peanut_peanut)*Prices[[5,'P_2020']]/SIM$q_pean
 SIM$m_peanuts_2028 <- ((1/  SIM$e_peanut_peanut)*Prices[[5,'P_2028']]/SIM$q_peanuts_2028)%>%replace_na(0)
 SIM$m_peanuts_2036 <- ((1/  SIM$e_peanut_peanut)*Prices[[5,'P_2036']]/SIM$q_peanuts_2036)%>%replace_na(0)
 
-```
-
-```{r}
 #find b
 SIM$b_corn_2012 <- (Prices[[1,'P_2012']] - SIM$m_corn_2012 * SIM$p_corn_2012)%>%replace_na(0)
 SIM$b_corn_2020 <- (Prices[[1,'P_2020']] - SIM$m_corn_2020 * SIM$q_corn_2020)%>%replace_na(0)
@@ -1186,9 +1047,7 @@ SIM$b_peanuts_2012 <- (Prices[[5,'P_2012']] - SIM$m_peanuts_2012 * SIM$p_peanuts
 SIM$b_peanuts_2020 <- (Prices[[5,'P_2020']] - SIM$m_peanuts_2020 * SIM$q_peanuts_2020)%>%replace_na(0)
 SIM$b_peanuts_2028 <- (Prices[[5,'P_2028']] - SIM$m_peanuts_2028 * SIM$q_peanuts_2028)%>%replace_na(0)
 SIM$b_peanuts_2036 <- (Prices[[5,'P_2036']] - SIM$m_peanuts_2036 * SIM$q_peanuts_2036)%>%replace_na(0)
-```
 
-```{r}
 #find x_0
 SIM$x0_corn_2012 <-    (-SIM$b_corn_2012/SIM$m_corn_2012)%>%replace_na(0)
 SIM$x0_corn_2020 <-    (-SIM$b_corn_2020/SIM$m_corn_2020)%>%replace_na(0)
@@ -1215,11 +1074,6 @@ SIM$x0_peanuts_2020 <- (-SIM$b_peanuts_2020/SIM$m_peanuts_2020)%>%replace_na(0)
 SIM$x0_peanuts_2028 <- (-SIM$b_peanuts_2028/SIM$m_peanuts_2028)%>%replace_na(0)
 SIM$x0_peanuts_2036 <- (-SIM$b_peanuts_2036/SIM$m_peanuts_2036)%>%replace_na(0)
 
-
-```
-
-
-```{r}
 #area = [m(x1)^2/2+b(x1)]-[m(x0)^2/2+b(x0)]
 
 SIM$PS_2012_corn <- ((SIM$m_corn_2012 * (SIM$p_corn_2012)^2/2+SIM$b_corn_2012 * (SIM$p_corn_2012))-(SIM$m_corn_2012 * (SIM$x0_corn_2012)^2/2+SIM$b_corn_2012 * (SIM$x0_corn_2012)))%>%replace_na(0)
@@ -1265,9 +1119,6 @@ SIM$PS_2028_peanuts <- ((SIM$m_peanuts_2028 * (SIM$q_peanuts_2028)^2/2+SIM$b_pea
 
 SIM$PS_2036_peanuts <- (((SIM$m_peanuts_2036 * (SIM$q_peanuts_2036)^2/2+SIM$b_peanuts_2036 * (SIM$q_peanuts_2036))-(SIM$m_peanuts_2012 * (SIM$x0_peanuts_2036)^2/2+SIM$b_peanuts_2036 * (SIM$x0_peanuts_2036))))%>%replace_na(0)
 
-```
-
-```{r}
 #PS change
 SIM$Delta_PS_2020_corn <- SIM$PS_2020_corn - SIM$PS_2012_corn
 chgs_PS_2020_corn <- sum(SIM$Delta_PS_2020_corn, na.rm = TRUE)
@@ -1282,31 +1133,24 @@ SIM$Delta_PS_2028_soy <- SIM$PS_2028_soy - SIM$PS_2020_soy
 chgs_PS_2020_soy <- sum(SIM$Delta_PS_2028_soy, na.rm = TRUE)
 SIM$Delta_PS_2036_soy <- SIM$PS_2036_soy - SIM$PS_2028_soy
 chgs_PS_2020_soy <- sum(SIM$Delta_PS_2036_soy, na.rm = TRUE)
-  
+
 SIM$Delta_PS_2020_wheat <- SIM$PS_2020_wheat - SIM$PS_2012_wheat
 chgs_PS_2020_wheat <- sum(SIM$Delta_PS_2020_wheat, na.rm = TRUE)
 SIM$Delta_PS_2028_wheat <- SIM$PS_2028_wheat - SIM$PS_2020_wheat
 chgs_PS_2028_wheat <- sum(SIM$Delta_PS_2028_wheat, na.rm = TRUE)
 SIM$Delta_PS_2036_wheat <- SIM$PS_2036_wheat - SIM$PS_2028_wheat
 chgs_PS_2036_wheat <- sum(SIM$Delta_PS_2036_wheat, na.rm = TRUE)
-  
+
 SIM$Delta_PS_2020_rice <- SIM$PS_2020_rice - SIM$PS_2012_rice
 chgs_PS_2020_rice <- sum(SIM$Delta_PS_2020_rice, na.rm = TRUE) 
 SIM$Delta_PS_2028_rice <- SIM$PS_2028_rice - SIM$PS_2020_rice
 chgs_PS_2028_rice <- sum(SIM$Delta_PS_2028_rice, na.rm = TRUE)
 SIM$Delta_PS_2036_rice <- SIM$PS_2036_rice - SIM$PS_2028_rice
 chgs_PS_2036_rice <- sum(SIM$Delta_PS_2036_rice, na.rm = TRUE)
-  
+
 SIM$Delta_PS_2020_peanuts <- SIM$PS_2020_peanuts - SIM$PS_2012_peanuts
 chgs_PS_2020_peanuts <- sum(SIM$Delta_PS_2020_peanuts, na.rm = TRUE)
 SIM$Delta_PS_2028_peanuts <- SIM$PS_2028_peanuts - SIM$PS_2020_peanuts
 chgs_PS_2028_peanuts <- sum(SIM$Delta_PS_2028_peanuts, na.rm = TRUE)
 SIM$Delta_PS_2036_peanuts <- SIM$PS_2036_peanuts - SIM$PS_2028_peanuts
 chgs_PS_2036_peanuts <- sum(SIM$Delta_PS_2036_peanuts, na.rm = TRUE)
-```
-
-#Results and Discussion:
-
-#Conclusions:
-
-
