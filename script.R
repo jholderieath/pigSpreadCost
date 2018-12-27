@@ -1131,9 +1131,9 @@ chgs_PS_2036_corn <- sum(SIM$Delta_PS_2036_corn, na.rm = TRUE)
 SIM$Delta_PS_2020_soy <- SIM$PS_2020_soy - SIM$PS_2012_soy
 chgs_PS_2020_soy <- sum(SIM$Delta_PS_2020_soy, na.rm = TRUE)
 SIM$Delta_PS_2028_soy <- SIM$PS_2028_soy - SIM$PS_2020_soy
-chgs_PS_2020_soy <- sum(SIM$Delta_PS_2028_soy, na.rm = TRUE)
+chgs_PS_2028_soy <- sum(SIM$Delta_PS_2028_soy, na.rm = TRUE)
 SIM$Delta_PS_2036_soy <- SIM$PS_2036_soy - SIM$PS_2028_soy
-chgs_PS_2020_soy <- sum(SIM$Delta_PS_2036_soy, na.rm = TRUE)
+chgs_PS_2036_soy <- sum(SIM$Delta_PS_2036_soy, na.rm = TRUE)
 
 SIM$Delta_PS_2020_wheat <- SIM$PS_2020_wheat - SIM$PS_2012_wheat
 chgs_PS_2020_wheat <- sum(SIM$Delta_PS_2020_wheat, na.rm = TRUE)
