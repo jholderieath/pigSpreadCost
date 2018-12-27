@@ -11,7 +11,7 @@ library(choroplethrMaps)
 library(triangle)
 h2o.no_progress()
 #setwd("~/pigSpreadCost")
-setwd("~/Documents/Github/pigSpreadCost")
+#setwd("~/Documents/Github/pigSpreadCost")
 source('edm_fx.R')
 #data(state.fips)
 # load elasticities
