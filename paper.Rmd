@@ -153,7 +153,7 @@ mt
 
 
 ## Spatio-temporal Simulation of Spread
-With estimated an estimated probability of invasion function, counties are evaluated for the probability of invasion in random order, without replacement. The RF model developed in the previous section is used to evaluate iteratively updated data on wild pig presence. Random presentation, rather than south to north is an attempt to simulate human introduction. The county’s probability of invasion is evaluated, then a random draw from u(0…1) is compared to the probability of invasion. If the probability is greater than the draw, the county is invaded and its status is updated for all subsequent counties evaluated in that time-step. Time-steps were set at an attempt to average the wildly varying spans of time between the observation points of 1982, 1988, 2004, and 2012. Predicted observations were set for 2020, 2028, and 2036 for a long-term outlook on the problem.
+With estimated an estimated probability of invasion function, counties are evaluated for the probability of invasion in random order, without replacement. The RF model developed in the previous section is used to evaluate iteratively updated data on wild pig presence. Random presentation, rather than south to north is an attempt to simulate human introduction. The county's probability of invasion is evaluated, then a random draw from u(0,1) is compared to the probability of invasion. If the probability is greater than the draw, the county is invaded and its status is updated for all subsequent counties evaluated in that time-step. Time-steps were set at an attempt to average the wildly varying spans of time between the observation points of 1982, 1988, 2004, and 2012. Predicted observations were set for 2020, 2028, and 2036 for a long-term outlook on the problem.
 
 ```{r}
 # incorporate predictions to snow data--------------
@@ -456,7 +456,7 @@ $$
 
 are solved simultaneously with the change operator modifying the price of the commodity, $EP_k$, is used to denote the relative change of the price of commodity ($k$), elasticities ($\eta$) of demand ($D$), $exports$, $imports$, and production locations ($fips$) for own price ($kk$) and cross price elasticities ($kj$), production and consumption weights ($s$) with the same notation, and exogenous relative production shocks ($EB$). 
 
-Elasticities are the same as used by Holderieath et al. (2018) with additional supply elasticities from FAPRI‐MU (2004). Verification of the model was conducted with unit own price elasticities and no cross price elasticities. Price changes with this set of verification elasticities are positive as expected from a restriction of supply. 
+Elasticities are the same as used by Holderieath et al. (2018) with additional supply elasticities from FAPRI-MU (2004). Verification of the model was conducted with unit own price elasticities and no cross price elasticities. Price changes with this set of verification elasticities are positive as expected from a restriction of supply. 
 
 Exogenous production shocks are randomly drawn from the damage results from Anderson et al. (2016). There is substantial variation between states reported by Anderson et al. (2016) and it is not immediately apparent what states would be most alike with respect to wild pig damage drivers. There are no consumption shocks in the model, so they have been omitted for clarity. The only market level analyzed is at the farm production level, because that is where the damage occurs.
 
@@ -1132,6 +1132,7 @@ Producer surplus is measured geometrically.
 
 Producer surplus
 ```{r} 
+# Producer surplus
 # find slope
 SIM$m_corn_2012 <- ((1/  SIM$e_corn_corn)*Prices[[1,'P_2012']]/SIM$p_corn_2012)%>%replace_na(0)
 SIM$m_corn_2020 <- ((1/  SIM$e_corn_corn)*Prices[[1,'P_2020']]/SIM$q_corn_2020)%>%replace_na(0)

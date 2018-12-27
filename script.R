@@ -9,9 +9,11 @@ library(choroplethr)
 library(choroplethrMaps)
 library(triangle)
 h2o.no_progress()
+setwd("~/pigSpreadCost")
 source('edm_fx.R')
 #data(state.fips)
 # load elasticities
+crops <- c("corn","soy","wheat",'rice','peanut')
 source('elast.R')
 
 # Snow et al data import
@@ -364,45 +366,44 @@ rm(by_cty,countyPigs,PigsIn1982,PigsIn1988,PigsIn2004,PigsIn2012,REPEAT,sf12010c
 h2o.shutdown(prompt = FALSE)
 gc()
 
-data(continental_us_states)
-
-map_2020 <- SIM %>%
-  select(GEOID,Id_2020)%>%
-  rename(region = GEOID, value = Id_2020)
-
-map_2020$region <- as.numeric(map_2020$region)
-map_2020$value <- as.factor(map_2020$value)
-tabulate(map_2020$value)
-county_choropleth(map_2020,
-                  title = "2020 Predicted Wild Pig Presence",
-                  legend = "Presence",
-                  state_zoom = continental_us_states)
-map_2028 <- SIM %>%
-  select(GEOID,Id_2028)%>%
-  rename(region = GEOID, value = Id_2028)
-map_2028$region <- as.numeric(map_2028$region)
-map_2028$value <- as.factor(map_2028$value)
-
-tabulate(map_2028$value)
-county_choropleth(map_2028,
-                  title = "2028 Predicted Wild Pig Presence",
-                  legend = "Presence",
-                  state_zoom = continental_us_states)
-
-map_2036 <- SIM %>%
-  select(GEOID,Id_2036)%>%
-  rename(region = GEOID, value = Id_2036)
-map_2036$region <- as.numeric(map_2036$region)
-map_2036$value <- as.factor(map_2036$value)
-
-tabulate(map_2036$value)
-county_choropleth(map_2036,
-                  title = "2036 Predicted Wild Pig Presence",
-                  legend = "Presence",
-                  state_zoom = continental_us_states)
+# data(continental_us_states)
+# 
+# map_2020 <- SIM %>%
+#   select(GEOID,Id_2020)%>%
+#   rename(region = GEOID, value = Id_2020)
+# 
+# map_2020$region <- as.numeric(map_2020$region)
+# map_2020$value <- as.factor(map_2020$value)
+# tabulate(map_2020$value)
+# county_choropleth(map_2020,
+#                   title = "2020 Predicted Wild Pig Presence",
+#                   legend = "Presence",
+#                   state_zoom = continental_us_states)
+# map_2028 <- SIM %>%
+#   select(GEOID,Id_2028)%>%
+#   rename(region = GEOID, value = Id_2028)
+# map_2028$region <- as.numeric(map_2028$region)
+# map_2028$value <- as.factor(map_2028$value)
+# 
+# tabulate(map_2028$value)
+# county_choropleth(map_2028,
+#                   title = "2028 Predicted Wild Pig Presence",
+#                   legend = "Presence",
+#                   state_zoom = continental_us_states)
+# 
+# map_2036 <- SIM %>%
+#   select(GEOID,Id_2036)%>%
+#   rename(region = GEOID, value = Id_2036)
+# map_2036$region <- as.numeric(map_2036$region)
+# map_2036$value <- as.factor(map_2036$value)
+# 
+# tabulate(map_2036$value)
+# county_choropleth(map_2036,
+#                   title = "2036 Predicted Wild Pig Presence",
+#                   legend = "Presence",
+#                   state_zoom = continental_us_states)
 
 # build dfs for price change calculations--------------
-crops <- c("corn","soy","wheat",'rice','peanut')
 markets <- c("domestic","export")
 s <- SIM[,'GEOID']
 suppliers <- unique(c("imports",unlist(s)))
