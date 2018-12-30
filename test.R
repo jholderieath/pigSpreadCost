@@ -1,4 +1,4 @@
-
+setwd("/repos/pigSpreadCost")
 source('doOneFunx.R')
 res <- replicate( 2, doOne(SNOW,
                                               pr_corn_2012,
