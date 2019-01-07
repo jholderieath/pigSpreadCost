@@ -1,14 +1,14 @@
-# e_domestic <- matrix(data = c(
-#   -0.696,  -0.289, -0.172, -0.024, -0.094,
-#   -0.382,  -0.536, -0.046, -0.021,	0.031,
-#   -0.191,	  0.108, -0.235, -0.008,  0.127,
-#   -0.511,  -0.323, -0.159, -0.157,   0.04,
-#   -1.665,	  0.498,  0.591,  0.056, -0.202
-# ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
-# dimnames = list(crops,crops))
+e_domestic <- matrix(data = c(
+  -0.696,  -0.289, -0.172, -0.024, -0.094,
+  -0.382,  -0.536, -0.046, -0.021,	0.031,
+  -0.191,	  0.108, -0.235, -0.008,  0.127,
+  -0.511,  -0.323, -0.159, -0.157,   0.04,
+  -1.665,	  0.498,  0.591,  0.056, -0.202
+),nrow = length(crops),ncol = length(crops),byrow = TRUE,
+dimnames = list(crops,crops))
 
-e_domestic <- -1 * diag(5)
-dimnames(e_domestic) = list(crops,crops)
+# e_domestic <- -1 * diag(5)
+# dimnames(e_domestic) = list(crops,crops)
 
 e_Corn_Belt<- matrix(data = c( 					
 	0.201,	-0.108,	-0.004,	0,	0,
@@ -19,8 +19,8 @@ e_Corn_Belt<- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Corn_Belt <-  diag(5)
-dimnames(e_Corn_Belt) = list(crops,crops)
+# e_Corn_Belt <-  diag(5)
+# dimnames(e_Corn_Belt) = list(crops,crops)
 
 
 e_Central_Plains  <- matrix(data = c(					
@@ -32,8 +32,8 @@ e_Central_Plains  <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Central_Plains <-  diag(5)
-dimnames(e_Central_Plains) = list(crops,crops)
+# e_Central_Plains <-  diag(5)
+# dimnames(e_Central_Plains) = list(crops,crops)
 
 
 e_Delta_States <- matrix(data = c(					
@@ -45,8 +45,8 @@ e_Delta_States <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Delta_States <-  diag(5)
-dimnames(e_Delta_States) = list(crops,crops)
+# e_Delta_States <-  diag(5)
+# dimnames(e_Delta_States) = list(crops,crops)
 
 
 e_Far_West <- matrix(data = c(					
@@ -58,8 +58,8 @@ e_Far_West <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Far_West <-  diag(5)
-dimnames(e_Far_West) = list(crops,crops)
+# e_Far_West <-  diag(5)
+# dimnames(e_Far_West) = list(crops,crops)
 
 
 e_Lake_States <- matrix(data = c(					
@@ -71,8 +71,8 @@ e_Lake_States <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Lake_States <-  diag(5)
-dimnames(e_Lake_States) = list(crops,crops)
+# e_Lake_States <-  diag(5)
+# dimnames(e_Lake_States) = list(crops,crops)
 
 
 e_Northeast <- matrix(data = c(					
@@ -84,8 +84,8 @@ e_Northeast <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Northeast <-  diag(5)
-dimnames(e_Northeast) = list(crops,crops)
+# e_Northeast <-  diag(5)
+# dimnames(e_Northeast) = list(crops,crops)
 
 
 e_Northern_Plains <- matrix(data = c(					
@@ -97,8 +97,8 @@ e_Northern_Plains <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Northern_Plains <-  diag(5)
-dimnames(e_Northern_Plains) = list(crops,crops)
+# e_Northern_Plains <-  diag(5)
+# dimnames(e_Northern_Plains) = list(crops,crops)
 
 
 e_Southeast <- matrix(data = c(					
@@ -110,8 +110,8 @@ e_Southeast <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Southeast <-  diag(5)
-dimnames(e_Southeast) = list(crops,crops)
+# e_Southeast <-  diag(5)
+# dimnames(e_Southeast) = list(crops,crops)
 
 
 e_Southern_Plains <- matrix(data = c(					
@@ -123,11 +123,11 @@ e_Southern_Plains <- matrix(data = c(
 ),nrow = length(crops),ncol = length(crops),byrow = TRUE,
 dimnames = list(crops,crops))
 
-e_Southern_Plains <-  diag(5)
-dimnames(e_Southern_Plains) = list(crops,crops)
+# e_Southern_Plains <-  diag(5)
+# dimnames(e_Southern_Plains) = list(crops,crops)
 
 
-e_export <- diag(x=1,nrow = length(crops),ncol = length(crops))
+e_export <- diag(x=-1,nrow = length(crops),ncol = length(crops))
 dimnames(e_export) <- list(crops,crops)
 
 e_imports <- diag(x=1,nrow = length(crops),ncol = length(crops))
